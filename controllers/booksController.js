@@ -65,20 +65,20 @@ const deleteBook = async (req, res) => {
 const getBooksForView = async () => {
     const books = await Book.find({});
     return books.map(book => ({
-        id: book._id,
-        title: book.name,
-        summary: book.summary || 'No summary',
-        publicationDate: book.publicationDate || 'Unknown',
-        reviewCount: book.reviews ? book.reviews.length : 0,
-        totalSales: book.sales ? book.sales.reduce((sum, s) => sum + s.sales, 0) : 0
+        _id: book._id,
+        title: book.title,
+        summary: book.summary,
+        publicationDate: book.publicationDate,
+        reviewCount: book.reviews.length,
+        totalSales: book.sales.reduce((sum, s) => sum + s.sales, 0)
     }));
 };
 
 module.exports = {
     getBooksForView,
-    getBooks: async (req, res) => { /* ... */ },
-    getBook: async (req, res) => { /* ... */ },
-    createBook: async (req, res) => { /* ... */ },
-    updateBook: async (req, res) => { /* ... */ },
-    deleteBook: async (req, res) => { /* ... */ }
+    getBooks,
+    getBook,
+    createBook,
+    updateBook,
+    deleteBook
 };
