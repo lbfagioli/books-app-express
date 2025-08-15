@@ -31,4 +31,5 @@ If mongoDB isn't installed:
 1. `git clone https://github.com/lbfagioli/books-app-express.git`
 2. `cd books-app-express`
 3. `npm install`
-4. `node server`
+4. `node seed.js`
+5. `node server`

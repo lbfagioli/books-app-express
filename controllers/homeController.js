@@ -1,3 +1,3 @@
 exports.getHome = (req, res) => {
-    res.send('jelou guorld');
+    res.render('home', { title: 'Welcome to Book Review App' });
 };

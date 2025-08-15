@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Books List</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+    <h1>Books List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Summary</th>
+                <th>Publication Date</th>
+                <th>Reviews</th>
+                <th>Total Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% books.forEach(book => { %>
+                <tr>
+                    <td><%= book.title %></td>
+                    <td><%= book.summary %></td>
+                    <td><%= book.publicationDate.toDateString() %></td>
+                    <td><%= book.reviewCount %></td>
+                    <td><%= book.totalSales %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+</html>
