@@ -8,6 +8,7 @@ This is a small app made using Express.js and MongoDB for the course "Software A
 
 1. Node.js
 1. Npm
+1. MongoDB
 
 ## Running instructions
 
