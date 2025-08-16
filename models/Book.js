@@ -14,7 +14,7 @@ const salesSchema = new mongoose.Schema({
 const bookSchema = new mongoose.Schema({
     title: String,
     summary: String,
-    publicationDate: Date,
+    publicationDate: { type: Date, default: Date.now },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author' }, // relation with Author
     reviews: [reviewSchema],
     sales: [salesSchema]

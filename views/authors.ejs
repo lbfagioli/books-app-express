@@ -6,27 +6,29 @@
 </head>
 <body>
     <%- include('common/navbar') %>
-    <h1>Authors Statistics</h1>
+    <div style="padding: 0 5%;">
+        <h1>Authors Statistics</h1>
 
-    <table id="authorsTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Books</th>
-                <th>Average Score</th>
-                <th>Total Sales</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% authors.forEach(a => { %>
+        <table id="authorsTable">
+            <thead>
                 <tr>
-                    <td><%= a.name %></td>
-                    <td><%= a.bookCount %></td>
-                    <td><%= a.avgScore %></td>
-                    <td><%= a.totalSales %></td>
+                    <th>Name</th>
+                    <th>Books</th>
+                    <th>Average Score</th>
+                    <th>Total Sales</th>
                 </tr>
-            <% }) %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <% authors.forEach(a => { %>
+                    <tr>
+                        <td><%= a.name %></td>
+                        <td><%= a.bookCount %></td>
+                        <td><%= a.avgScore %></td>
+                        <td><%= a.totalSales %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

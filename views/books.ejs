@@ -6,28 +6,30 @@
 </head>
 <body>
     <%- include('common/navbar') %>
-    <h1>Books List</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Summary</th>
-                <th>Publication Date</th>
-                <th>Reviews</th>
-                <th>Total Sales</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% books.forEach(book => { %>
+    <div style="padding: 0 5%;">
+        <h1>Books List</h1>
+        <table>
+            <thead>
                 <tr>
-                    <td><%= book.title %></td>
-                    <td><%= book.summary %></td>
-                    <td><%= book.publicationDate.toDateString() %></td>
-                    <td><%= book.reviewCount %></td>
-                    <td><%= book.totalSales %></td>
+                    <th>Title</th>
+                    <th>Summary</th>
+                    <th>Publication Date</th>
+                    <th>Reviews</th>
+                    <th>Total Sales</th>
                 </tr>
-            <% }) %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <% books.forEach(book => { %>
+                    <tr>
+                        <td><%= book.title %></td>
+                        <td><%= book.summary %></td>
+                        <td><%= book.publicationDate.toDateString() %></td>
+                        <td><%= book.reviewCount %></td>
+                        <td><%= book.totalSales %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
