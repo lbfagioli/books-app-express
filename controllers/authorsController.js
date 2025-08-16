@@ -3,15 +3,11 @@ const Book = require('../models/Book');
 
 const getAuthors = async (req, res) => {
     try {
+        const { name, minBooks, maxBooks, minScore, maxScore, minSales, maxSales, minReviews, maxReviews } = req.query;
+
         const authors = await Author.find({});
-
-        // To get raw data
-        if (req.originalUrl.startsWith('/api')) {
-            return res.json(authors);
-        }
-
-        // To frontend
         const stats = [];
+
         for (let author of authors) {
             const books = await Book.find({ author: author._id });
 
@@ -33,14 +29,43 @@ const getAuthors = async (req, res) => {
             stats.push({
                 name: author.name,
                 bookCount: books.length,
-                avgScore: avgScore.toFixed(2),
+                avgScore: parseFloat(avgScore.toFixed(2)),
                 totalSales,
                 totalReviews
             });
         }
 
-        // Render the table
-        res.render('authors', { authors: stats });
+        // 🔎 Apply filters
+        let filtered = stats;
+
+        if (name && name.trim() !== "") {
+            filtered = filtered.filter(a =>
+                a.name.toLowerCase().includes(name.toLowerCase())
+            );
+        }
+
+        if (minBooks) filtered = filtered.filter(a => a.bookCount >= parseInt(minBooks));
+        if (maxBooks) filtered = filtered.filter(a => a.bookCount <= parseInt(maxBooks));
+
+        if (minScore) filtered = filtered.filter(a => a.avgScore >= parseFloat(minScore));
+        if (maxScore) filtered = filtered.filter(a => a.avgScore <= parseFloat(maxScore));
+
+        if (minSales) filtered = filtered.filter(a => a.totalSales >= parseInt(minSales));
+        if (maxSales) filtered = filtered.filter(a => a.totalSales <= parseInt(maxSales));
+
+        if (minReviews) filtered = filtered.filter(a => a.totalReviews >= parseInt(minReviews));
+        if (maxReviews) filtered = filtered.filter(a => a.totalReviews <= parseInt(maxReviews));
+
+        // API: return JSON
+        if (req.originalUrl.startsWith('/api')) {
+            return res.json(filtered);
+        }
+
+        // Render table with filters
+        res.render('authors', {
+            authors: filtered,
+            filters: { name, minBooks, maxBooks, minScore, maxScore, minSales, maxSales, minReviews, maxReviews }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

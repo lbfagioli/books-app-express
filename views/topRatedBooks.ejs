@@ -8,6 +8,20 @@
     <%- include('common/navbar') %>
     <div style="padding: 0 5%;">
         <h1>Top 10 Rated Books</h1>
+
+        <form method="get" action="/books/top-rated" style="margin-bottom: 20px;">
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author" value="<%= filters.author || '' %>">
+
+            <label for="minScore">Min Score:</label>
+            <input type="number" step="0.1" id="minScore" name="minScore" value="<%= filters.minScore || '' %>">
+
+            <label for="maxScore">Max Score:</label>
+            <input type="number" step="0.1" id="maxScore" name="maxScore" value="<%= filters.maxScore || '' %>">
+
+            <button type="submit">Filter</button>
+        </form>
+
         <table>
             <thead>
                 <tr>
@@ -23,7 +37,7 @@
                     <tr>
                         <td><%= book.title %></td>
                         <td><%= book.author %></td>
-                        <td><%= book.avgScore %></td>
+                        <td><%= book.avgScore.toFixed(2) %></td>
                         <td><%= book.highestReview %></td>
                         <td><%= book.lowestReview %></td>
                     </tr>

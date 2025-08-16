@@ -70,6 +70,9 @@ const deleteBook = async (req, res) => {
 
 const getTopRatedBooks = async (req, res) => {
     try {
+        const { author, minScore, maxScore } = req.query;
+
+        // Get all books with author populated
         const books = await Book.find({}).populate('author');
 
         const ratedBooks = books.map(book => {
@@ -78,7 +81,6 @@ const getTopRatedBooks = async (req, res) => {
                 ? scores.reduce((a, b) => a + b, 0) / scores.length
                 : 0;
 
-            // Best and worst review
             const highestReview = book.reviews.length > 0
                 ? book.reviews.reduce((max, r) => r.score > max.score ? r : max, book.reviews[0])
                 : null;
@@ -90,13 +92,31 @@ const getTopRatedBooks = async (req, res) => {
             return {
                 title: book.title,
                 author: book.author ? book.author.name : "Unknown",
-                avgScore: avgScore.toFixed(2),
-                highestReview: highestReview.reviewText,
-                lowestReview: lowestReview.reviewText
+                avgScore,
+                highestReview: highestReview ? highestReview.reviewText : "N/A",
+                lowestReview: lowestReview ? lowestReview.reviewText : "N/A"
             };
         });
 
-        const top10 = ratedBooks
+        // Apply filters
+        let filtered = ratedBooks;
+
+        if (author && author.trim() !== "") {
+            filtered = filtered.filter(b =>
+                b.author.toLowerCase().includes(author.toLowerCase())
+            );
+        }
+
+        if (minScore) {
+            filtered = filtered.filter(b => b.avgScore >= parseFloat(minScore));
+        }
+
+        if (maxScore) {
+            filtered = filtered.filter(b => b.avgScore <= parseFloat(maxScore));
+        }
+
+        // Sort and take top 10
+        const top10 = filtered
             .sort((a, b) => b.avgScore - a.avgScore)
             .slice(0, 10);
 
@@ -104,7 +124,10 @@ const getTopRatedBooks = async (req, res) => {
             return res.json(top10);
         }
 
-        res.render('topRatedBooks', { books: top10 });
+        res.render('topRatedBooks', {
+            books: top10,
+            filters: { author, minScore, maxScore }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -113,6 +136,8 @@ const getTopRatedBooks = async (req, res) => {
 // Top 50 selling books of all time
 const getTopSellingBooks = async (req, res) => {
     try {
+        const { author, top5 } = req.query; // filters
+
         const books = await Book.find({}).populate('author');
 
         const sellingBooks = books.map(book => {
@@ -126,7 +151,7 @@ const getTopSellingBooks = async (req, res) => {
                     .reduce((acc, b) => acc + b.sales.reduce((s, yr) => s + yr.sales, 0), 0);
             }
 
-            // Was it in top 5 of its year?
+            // Was it in top 5 of its publication year?
             const year = book.publicationDate ? book.publicationDate.getFullYear() : null;
             let top5OfYear = false;
             if (year) {
@@ -151,7 +176,22 @@ const getTopSellingBooks = async (req, res) => {
             };
         });
 
-        const top50 = sellingBooks
+        // Apply filters
+        let filtered = sellingBooks;
+
+        if (author && author.trim() !== "") {
+            filtered = filtered.filter(b =>
+                b.author.toLowerCase().includes(author.toLowerCase())
+            );
+        }
+
+        if (top5 === "true" || top5 === "false") {
+            const boolVal = top5 === "true";
+            filtered = filtered.filter(b => b.top5OfYear === boolVal);
+        }
+        
+        // Sort + limit
+        const top50 = filtered
             .sort((a, b) => b.totalSales - a.totalSales)
             .slice(0, 50);
 
@@ -159,11 +199,12 @@ const getTopSellingBooks = async (req, res) => {
             return res.json(top50);
         }
 
-        res.render('topSellingBooks', { books: top50 });
+        res.render('topSellingBooks', { books: top50, filters: { author, top5 } });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const getSearch = async (req, res) => {
     try {

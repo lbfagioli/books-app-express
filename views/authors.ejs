@@ -9,6 +9,29 @@
     <div style="padding: 0 5%;">
         <h1>Authors Statistics</h1>
 
+        <form method="get" action="/authors" style="margin-bottom: 20px;">
+            <label for="name">Name:</label>
+            <input type="text" name="name" value="<%= filters.name || '' %>">
+
+            <label>Books:</label>
+            <input type="number" name="minBooks" placeholder="Min" value="<%= filters.minBooks || '' %>">
+            <input type="number" name="maxBooks" placeholder="Max" value="<%= filters.maxBooks || '' %>">
+
+            <label>Avg Score:</label>
+            <input type="number" step="0.1" name="minScore" placeholder="Min" value="<%= filters.minScore || '' %>">
+            <input type="number" step="0.1" name="maxScore" placeholder="Max" value="<%= filters.maxScore || '' %>">
+
+            <label>Sales:</label>
+            <input type="number" name="minSales" placeholder="Min" value="<%= filters.minSales || '' %>">
+            <input type="number" name="maxSales" placeholder="Max" value="<%= filters.maxSales || '' %>">
+
+            <label>Reviews:</label>
+            <input type="number" name="minReviews" placeholder="Min" value="<%= filters.minReviews || '' %>">
+            <input type="number" name="maxReviews" placeholder="Max" value="<%= filters.maxReviews || '' %>">
+
+            <button type="submit">Filter</button>
+        </form>
+
         <table id="authorsTable">
             <thead>
                 <tr>
@@ -16,6 +39,7 @@
                     <th>Books</th>
                     <th>Average Score</th>
                     <th>Total Sales</th>
+                    <th>Total Reviews</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,6 +49,7 @@
                         <td><%= a.bookCount %></td>
                         <td><%= a.avgScore %></td>
                         <td><%= a.totalSales %></td>
+                        <td><%= a.totalReviews %></td>
                     </tr>
                 <% }) %>
             </tbody>
