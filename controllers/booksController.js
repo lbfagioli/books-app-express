@@ -91,8 +91,8 @@ const getTopRatedBooks = async (req, res) => {
                 title: book.title,
                 author: book.author ? book.author.name : "Unknown",
                 avgScore: avgScore.toFixed(2),
-                highestReview,
-                lowestReview
+                highestReview: highestReview.reviewText,
+                lowestReview: lowestReview.reviewText
             };
         });
 

@@ -20,7 +20,21 @@ Developed by Group 11:
 
 In order to run this project, run the following commands in your terminal
 
-If mongoDB isn't installed:
+
+To setup mongoDB repository in case of utilizing Ubuntu:
+-`curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+  sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+  --dearmor`
+(jammy) 
+-`echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | \
+  sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list`
+(focal)
+-`echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | \
+  sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list`
+-`sudo apt update`
+
+
+To install mongoDB:
 - `sudo apt update`
 - `sudo apt install -y mongodb-org`
 - `sudo systemctl start mongod`

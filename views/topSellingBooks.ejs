@@ -8,7 +8,28 @@
     <%- include('common/navbar') %>
     <div style="padding: 0 5%;">
         <h1>Top 50 Selling Books</h1>
-        <p>POR HACER: tabla con los 50 libros más vendidos, ventas totales por libro, ventas por autor, y si estuvo en el top 5 de su año.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Total Sales</th>
+                    <th>Total Sales by Author</th>
+                    <th>Author's Top 5?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% books.forEach(book => { %>
+                    <tr>
+                        <td><%= book.title %></td>
+                        <td><%= book.author %></td>
+                        <td><%= book.totalSales %></td>
+                        <td><%= book.authorTotal %></td>
+                        <td><%= book.top5OfYear %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
     </div>
 </body>
 </html>
