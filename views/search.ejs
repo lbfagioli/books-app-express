@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results for "<%= q %>"</title>
+    <%- include('common/styles') %>
+</head>
+<body>
+    <%- include('common/navbar') %>
+
+    <h1>Search Results for "<%= q %>"</h1>
+
+    <% if (books.length === 0) { %>
+        <p>No books found matching your search.</p>
+    <% } else { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Summary</th>
+                    <th>Publication Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% books.forEach(book => { %>
+                    <tr>
+                        <td><%= book.title %></td>
+                        <td><%= book.summary %></td>
+                        <td><%= book.publicationDate.toDateString() %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" style="margin-top:20px; display:flex; gap:5px; flex-wrap:wrap;">
+            <% if (page > 1) { %>
+                <a href="/search?q=<%= q %>&page=<%= page-1 %>" class="pagination-btn">Previous</a>
+            <% } else { %>
+                <a href="#" class="pagination-btn disabled">Previous</a>
+            <% } %>
+
+            <% for (let p = 1; p <= totalPages; p++) { %>
+                <% if (p === page) { %>
+                    <a href="#" class="pagination-btn current"><%= p %></a>
+                <% } else { %>
+                    <a href="/search?q=<%= q %>&page=<%= p %>" class="pagination-btn"><%= p %></a>
+                <% } %>
+            <% } %>
+
+            <% if (page < totalPages) { %>
+                <a href="/search?q=<%= q %>&page=<%= page+1 %>" class="pagination-btn">Next</a>
+            <% } else { %>
+                <a href="#" class="pagination-btn disabled">Next</a>
+            <% } %>
+        </div>
+    <% } %>
+</body>
+</html>

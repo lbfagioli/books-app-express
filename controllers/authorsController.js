@@ -1,0 +1,94 @@
+const Author = require('../models/Author');
+const Book = require('../models/Book');
+
+const getAuthors = async (req, res) => {
+    try {
+        const authors = await Author.find({});
+
+        // To get raw data
+        if (req.originalUrl.startsWith('/api')) {
+            return res.json(authors);
+        }
+
+        // To frontend
+        const stats = [];
+        for (let author of authors) {
+            const books = await Book.find({ author: author._id });
+
+            const totalSales = books.reduce(
+                (acc, book) => acc + book.sales.reduce((s, yr) => s + yr.sales, 0),
+                0
+            );
+
+            const totalReviews = books.reduce((acc, book) => acc + book.reviews.length, 0);
+
+            const avgScore =
+                books.reduce((acc, book) => {
+                    if (book.reviews.length > 0) {
+                        return acc + (book.reviews.reduce((s, r) => s + r.score, 0) / book.reviews.length);
+                    }
+                    return acc;
+                }, 0) / (books.length || 1);
+
+            stats.push({
+                name: author.name,
+                bookCount: books.length,
+                avgScore: avgScore.toFixed(2),
+                totalSales,
+                totalReviews
+            });
+        }
+
+        // Render the table
+        res.render('authors', { authors: stats });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getAuthor = async (req, res) => {
+    try {
+        const author = await Author.findById(req.params.id);
+        if (!author) return res.status(404).json({ error: "Not found" });
+        res.json(author);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const createAuthor = async (req, res) => {
+    try {
+        const author = new Author(req.body);
+        const saved = await author.save();
+        res.status(201).json(saved);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const updateAuthor = async (req, res) => {
+    try {
+        const updated = await Author.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updated) return res.status(404).json({ error: "Not found" });
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const deleteAuthor = async (req, res) => {
+    try {
+        await Author.findByIdAndDelete(req.params.id);
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = {
+    getAuthors,
+    getAuthor,
+    createAuthor,
+    updateAuthor,
+    deleteAuthor
+};

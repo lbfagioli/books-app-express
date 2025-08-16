@@ -1,0 +1,18 @@
+<nav style="background:#333; padding:10px; display:flex; align-items:center; flex-wrap:wrap;">
+    <div>
+        <a href="/" style="color:white; margin-right:15px; text-decoration:none;">Home</a>
+        <a href="/authors" style="color:white; margin-right:15px; text-decoration:none;">Authors</a>
+        <a href="/books" style="color:white; margin-right:15px; text-decoration:none;">Books</a>
+        <a href="/books/top-rated" style="color:white; margin-right:15px; text-decoration:none;">Top Rated</a>
+        <a href="/books/top-selling" style="color:white; margin-right:15px; text-decoration:none;">Top Selling</a>
+    </div>
+
+    <!-- Search Form -->
+    <form action="/search" method="GET" style="margin:0 auto; display:flex;">
+        <input type="text" name="q" placeholder="Search books..." required
+               style="padding:8px 15px; border-radius:5px; border:none; width:300px; font-size:16px; margin-right:5px;">
+        <button type="submit" style="padding:10px 15px; border:none; border-radius:5px; background:#007BFF; color:white; font-size:16px; cursor:pointer;">
+            Search
+        </button>
+    </form>
+</nav>
