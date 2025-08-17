@@ -18,32 +18,42 @@ Developed by Group 11:
 
 ## Running instructions
 
-In order to run this project, run the following commands in your terminal
+### MongoDB setup
 
+#### Ubuntu
+To install MongoDB on Ubuntu:
+1. Add the MongoDB repository and key (see official docs for your Ubuntu version).
+2. Run:
+  ```bash
+  sudo apt update
+  sudo apt install -y mongodb-org
+  sudo systemctl start mongod
+  sudo systemctl enable mongod
+  sudo systemctl status mongod
+  ```
 
-To setup mongoDB repository in case of utilizing Ubuntu:
--`curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
-  sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
-  --dearmor`
-(jammy) 
--`echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | \
-  sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list`
-(focal)
--`echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | \
-  sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list`
--`sudo apt update`
+#### Windows
+1. Download MongoDB Community Server from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community).
+2. Run the installer and follow the instructions.
+3. Start MongoDB as a Windows service (default) or run `mongod` from the command line.
+4. Make sure MongoDB is running on `localhost:27017`.
 
-
-To install mongoDB:
-- `sudo apt update`
-- `sudo apt install -y mongodb-org`
-- `sudo systemctl start mongod`
-- `sudo systemctl enable mongod`
-- `sudo systemctl status mongod`
-
-
-1. `git clone https://github.com/lbfagioli/books-app-express.git`
-2. `cd books-app-express`
-3. `npm install`
-4. `node seed.js`
-5. `node server`
+### Project setup (all platforms)
+1. Clone the repository:
+  ```bash
+  git clone https://github.com/lbfagioli/books-app-express.git
+  cd books-app-express
+  ```
+2. Install dependencies:
+  ```bash
+  npm install
+  ```
+3. Seed the database with sample data:
+  ```bash
+  node seed.js
+  ```
+4. Start the server:
+  ```bash
+  node server.js
+  ```
+5. Open your browser and go to [http://localhost:3000](http://localhost:3000)
