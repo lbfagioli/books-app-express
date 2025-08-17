@@ -61,9 +61,13 @@ const getAuthors = async (req, res) => {
             return res.json(filtered);
         }
 
-        // Render table with filters
+        // Render table with filters y asegurar _id
+        const authorsWithId = filtered.map(a => {
+            const found = authors.find(orig => orig.name === a.name);
+            return { ...a, _id: found ? found._id : null };
+        });
         res.render('authors', {
-            authors: filtered,
+            authors: authorsWithId,
             filters: { name, minBooks, maxBooks, minScore, maxScore, minSales, maxSales, minReviews, maxReviews }
         });
     } catch (err) {
@@ -116,4 +120,58 @@ module.exports = {
     createAuthor,
     updateAuthor,
     deleteAuthor
+    ,renderNewAuthorForm
+    ,createAuthorWeb
+    ,renderEditAuthorForm
+    ,updateAuthorWeb
+    ,deleteAuthorWeb
 };
+
+// --- Web CRUD methods ---
+
+// Render new author form
+async function renderNewAuthorForm(req, res) {
+    res.render('authorsForm', { author: {}, action: '/authors', method: 'POST', title: 'Add Author' });
+}
+
+// Create author from web form
+async function createAuthorWeb(req, res) {
+    try {
+        const author = new Author(req.body);
+        await author.save();
+        res.redirect('/authors');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Render edit author form
+async function renderEditAuthorForm(req, res) {
+    try {
+        const author = await Author.findById(req.params.id);
+        if (!author) return res.status(404).send('Author not found');
+        res.render('authorsForm', { author, action: `/authors/${author._id}`, method: 'POST', title: 'Edit Author' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Update author from web form
+async function updateAuthorWeb(req, res) {
+    try {
+        await Author.findByIdAndUpdate(req.params.id, req.body);
+        res.redirect('/authors');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Delete author from web
+async function deleteAuthorWeb(req, res) {
+    try {
+        await Author.findByIdAndDelete(req.params.id);
+        res.redirect('/authors');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}

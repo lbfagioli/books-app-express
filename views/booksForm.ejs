@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <%- include('common/styles') %>
+</head>
+<body>
+    <%- include('common/navbar') %>
+    <div style="padding: 0 5%; max-width:600px; margin:auto;">
+        <h1><%= title %></h1>
+        <form action="<%= action %>" method="POST">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="<%= book.title || '' %>" required><br><br>
+
+            <label for="summary">Summary:</label>
+            <textarea id="summary" name="summary"><%= book.summary || '' %></textarea><br><br>
+
+            <label for="publicationDate">Publication Date:</label>
+            <input type="date" id="publicationDate" name="publicationDate" value="<%= book.publicationDate ? book.publicationDate.toISOString().substring(0,10) : '' %>"><br><br>
+
+            <label for="author">Author:</label>
+            <select id="author" name="author" required>
+                <option value="">Select author</option>
+                <% authors.forEach(a => { %>
+                    <option value="<%= a._id %>" <%= book.author && book.author.toString() === a._id.toString() ? 'selected' : '' %>><%= a.name %></option>
+                <% }) %>
+            </select><br><br>
+
+            <button type="submit">Save</button>
+        </form>
+        <a href="/books">Back to Books</a>
+
+        <hr>
+        <h2>Reviews</h2>
+        <table style="width:100%; margin-bottom:10px;">
+            <thead>
+                <tr>
+                    <th>Text</th>
+                    <th>Score</th>
+                    <th>Upvotes</th>
+                    <th style="width:100px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (book.reviews && book.reviews.length > 0) { book.reviews.forEach(r => { %>
+                    <tr>
+                        <td>
+                            <form action="/books/<%= book._id %>/reviews/<%= r._id %>" method="POST" style="display:inline;">
+                                <input type="text" name="reviewText" value="<%= r.reviewText %>" style="width:100%">
+                        </td>
+                        <td>
+                                <input type="number" name="score" min="1" max="5" value="<%= r.score %>" style="width:60px">
+                        </td>
+                        <td>
+                                <input type="number" name="upvotes" min="0" value="<%= r.upvotes %>" style="width:60px">
+                        </td>
+                        <td>
+                                <button type="submit" style="background-color:#ffc107; color:#333; border:none; padding:2px 6px; border-radius:3px; font-size:12px;">Update</button>
+                            </form>
+                            <form action="/books/<%= book._id %>/reviews/<%= r._id %>/delete" method="POST" style="display:inline;">
+                                <button type="submit" style="background-color:#dc3545; color:white; border:none; padding:2px 6px; border-radius:3px; font-size:12px;" onclick="return confirm('Are you sure you want to delete this review?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) } %>
+                <tr>
+                    <form action="/books/<%= book._id %>/reviews" method="POST" style="display:inline;">
+                        <td><input type="text" name="reviewText" placeholder="New review" style="width:100%"></td>
+                        <td><input type="number" name="score" min="1" max="5" value="5" style="width:60px"></td>
+                        <td><input type="number" name="upvotes" min="0" value="0" style="width:60px"></td>
+                        <td><button type="submit" style="background-color:#007bff; color:white; border:none; padding:2px 6px; border-radius:3px; font-size:12px;">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+        <h2>Sales by Year</h2>
+        <table style="width:100%; margin-bottom:10px;">
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Sales</th>
+                    <th style="width:100px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (book.sales && book.sales.length > 0) { book.sales.forEach(s => { %>
+                    <tr>
+                        <td>
+                            <form action="/books/<%= book._id %>/sales/<%= s._id %>" method="POST" style="display:inline;">
+                                <input type="number" name="year" value="<%= s.year %>" style="width:80px">
+                        </td>
+                        <td>
+                                <input type="number" name="sales" value="<%= s.sales %>" style="width:80px">
+                        </td>
+                        <td>
+                                <button type="submit" style="background-color:#ffc107; color:#333; border:none; padding:2px 6px; border-radius:3px; font-size:12px;">Update</button>
+                            </form>
+                            <form action="/books/<%= book._id %>/sales/<%= s._id %>/delete" method="POST" style="display:inline;">
+                                <button type="submit" style="background-color:#dc3545; color:white; border:none; padding:2px 6px; border-radius:3px; font-size:12px;" onclick="return confirm('Are you sure you want to delete this sale record?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) } %>
+                <tr>
+                    <form action="/books/<%= book._id %>/sales" method="POST" style="display:inline;">
+                        <td><input type="number" name="year" placeholder="Year" style="width:80px"></td>
+                        <td><input type="number" name="sales" placeholder="Sales" style="width:80px"></td>
+                        <td><button type="submit" style="background-color:#007bff; color:white; border:none; padding:2px 6px; border-radius:3px; font-size:12px;">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

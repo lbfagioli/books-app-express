@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <%- include('common/styles') %>
+</head>
+<body>
+    <%- include('common/navbar') %>
+    <div style="padding: 0 5%; max-width:600px; margin:auto;">
+        <h1><%= title %></h1>
+        <form action="<%= action %>" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="<%= author.name || '' %>" required><br><br>
+
+            <label for="dateOfBirth">Date of Birth:</label>
+            <input type="date" id="dateOfBirth" name="dateOfBirth" value="<%= author.dateOfBirth ? author.dateOfBirth.toISOString().substring(0,10) : '' %>"><br><br>
+
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="country" value="<%= author.country || '' %>"><br><br>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description"><%= author.description || '' %></textarea><br><br>
+
+            <button type="submit">Save</button>
+        </form>
+        <a href="/authors">Back to Authors</a>
+    </div>
+</body>
+</html>

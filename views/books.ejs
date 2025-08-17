@@ -7,8 +7,9 @@
 <body>
     <%- include('common/navbar') %>
     <div style="padding: 0 5%;">
-        <h1>Books List</h1>
-        <table>
+    <h1>Books List</h1>
+    <a href="/books/new" style="margin-bottom:20px; background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px;">New Book</a>
+    <table>
             <thead>
                 <tr>
                     <th>Title</th>
@@ -16,6 +17,7 @@
                     <th>Publication Date</th>
                     <th>Reviews</th>
                     <th>Total Sales</th>
+                    <th style="width:120px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,6 +28,14 @@
                         <td><%= book.publicationDate.toDateString() %></td>
                         <td><%= book.reviewCount %></td>
                         <td><%= book.totalSales %></td>
+                        <td>
+                            <% if (book._id) { %>
+                                <a href="/books/<%= book._id %>/edit" style="background-color: #ffc107; color: #333; border: none; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-right:3px;">Edit</a>
+                                <form action="/books/<%= book._id %>/delete" method="POST" style="display:inline; margin:0;">
+                                    <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 13px;" onclick="return confirm('Are you sure you want to delete this book?');">Delete</button>
+                                </form>
+                            <% } %>
+                        </td>
                     </tr>
                 <% }) %>
             </tbody>

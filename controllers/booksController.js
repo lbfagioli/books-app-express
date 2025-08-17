@@ -245,4 +245,157 @@ module.exports = {
     getTopRatedBooks,
     getTopSellingBooks,
     getSearch
+    ,renderNewBookForm
+    ,createBookWeb
+    ,renderEditBookForm
+    ,updateBookWeb
+    ,deleteBookWeb
+    ,addReviewWeb
+    ,updateReviewWeb
+    ,deleteReviewWeb
+    ,addSaleWeb
+    ,updateSaleWeb
+    ,deleteSaleWeb
 };
+
+// --- Reviews CRUD ---
+async function addReviewWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        book.reviews.push(req.body);
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+async function updateReviewWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        const review = book.reviews.id(req.params.reviewId);
+        if (!review) return res.status(404).send('Review not found');
+        review.reviewText = req.body.reviewText;
+        review.score = req.body.score;
+        review.upvotes = req.body.upvotes;
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+async function deleteReviewWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        // Try Mongoose subdoc remove
+        const reviewSubdoc = book.reviews.id(req.params.reviewId);
+        if (reviewSubdoc && typeof reviewSubdoc.remove === 'function') {
+            reviewSubdoc.remove();
+        } else {
+            // Fallback: filter out by _id
+            book.reviews = book.reviews.filter(r => r._id?.toString() !== req.params.reviewId);
+        }
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// --- Sales CRUD ---
+async function addSaleWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        book.sales.push(req.body);
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+async function updateSaleWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        const sale = book.sales.id(req.params.saleId);
+        if (!sale) return res.status(404).send('Sale not found');
+        sale.year = req.body.year;
+        sale.sales = req.body.sales;
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+async function deleteSaleWeb(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        // Try Mongoose subdoc remove
+        const saleSubdoc = book.sales.id(req.params.saleId);
+        if (saleSubdoc && typeof saleSubdoc.remove === 'function') {
+            saleSubdoc.remove();
+        } else {
+            // Fallback: filter out by _id
+            book.sales = book.sales.filter(s => s._id?.toString() !== req.params.saleId);
+        }
+        await book.save();
+        res.redirect(`/books/${book._id}/edit`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// --- Web CRUD methods ---
+
+const Author = require('../models/Author');
+
+// Render new book form
+async function renderNewBookForm(req, res) {
+    const authors = await Author.find({});
+    res.render('booksForm', { book: {}, authors, action: '/books', method: 'POST', title: 'Add Book' });
+}
+
+// Create book from web form
+async function createBookWeb(req, res) {
+    try {
+        const book = new Book(req.body);
+        await book.save();
+        res.redirect('/books');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Render edit book form
+async function renderEditBookForm(req, res) {
+    try {
+        const book = await Book.findById(req.params.id);
+        if (!book) return res.status(404).send('Book not found');
+        const authors = await Author.find({});
+        res.render('booksForm', { book, authors, action: `/books/${book._id}`, method: 'POST', title: 'Edit Book' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Update book from web form
+async function updateBookWeb(req, res) {
+    try {
+        await Book.findByIdAndUpdate(req.params.id, req.body);
+        res.redirect('/books');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+// Delete book from web
+async function deleteBookWeb(req, res) {
+    try {
+        await Book.findByIdAndDelete(req.params.id);
+        res.redirect('/books');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
