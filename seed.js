@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const Book = require('./models/Book');
 const Author = require('./models/Author');
+const { mongoURI } = require('./constants');
 
-mongoose.connect('mongodb://localhost:27017/books-app-db');
+mongoose.connect(mongoURI);
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
