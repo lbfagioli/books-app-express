@@ -15,8 +15,17 @@ Developed by Group 11:
 1. Node.js
 1. Npm
 1. MongoDB
+1. Docker (optional)
 
 ## Running instructions
+
+### If using Docker
+
+You can just run this command:
+
+- `docker-compose up --build`
+
+Otherwise, you have to ensure to have [MongoDB running](#mongodb-setup) and follow [Project setup instructions](#project-setup-all-platforms)
 
 ### MongoDB setup
 
