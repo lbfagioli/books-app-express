@@ -1,10 +1,60 @@
+version: "3.9"
+
 services:
   books-app:
     build: .
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - db
-  
+    environment:
+      MONGO_URL: mongodb://db:27017/books
+      UPLOAD_PATH: /app/uploads
+      SERVE_STATIC: ${SERVE_STATIC:-true}
+    volumes:
+      - ./uploads:/app/uploads
+    profiles:
+      - base
+
   db:
-    image: mongo
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    profiles:
+      - base
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    profiles:
+      - cache
+
+  opensearch:
+    image: opensearchproject/opensearch:2.14.0
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+    ports:
+      - "9200:9200"
+    profiles:
+      - search
+
+  traefik:
+    image: traefik:v3.2
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    profiles:
+      - proxy
+
+volumes:
+  mongo_data:

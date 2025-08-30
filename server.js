@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const routes = require('./routes');
 const mongoose = require('mongoose');
-const { mongoURI, PORT } = require('./constants');
+const { mongoURI, PORT, serveStatic } = require('./constants');
+
 
 mongoose.connect(mongoURI)
     .then(() => console.log('Mongo connected'))
@@ -20,7 +21,12 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Routes
-app.use('/', routes);
+if (serveStatic) {
+    app.use(express.static(path.join(__dirname, 'public')));
+}
+else {
+    app.use('/', routes);
+}
 
 app.listen(PORT, () => {
     console.log('Server started, receiving requests...');

@@ -1,4 +1,8 @@
 #!/bin/sh
+set -e
 
-node seed
-node server
+echo "Running seed script..."
+node seed.js
+
+echo "Starting server..."
+exec node server.js

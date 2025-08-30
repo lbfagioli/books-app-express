@@ -19,11 +19,22 @@ Developed by Group 11:
 
 ## Running instructions
 
-### If using Docker
+### Docker Profiles
 
-You can just run this command:
-
+App + DB:
 - `docker-compose up --build`
+
+App + DB + Cache
+- `docker-compose --profile cache up --build`
+
+App + DB + Search Engine:
+- `docker-compose --profile search up --build`
+
+App + DB + Reverse Proxy
+- `docker-compose --profile proxy up --build`
+
+All Together
+- `docker compose --profile cache --profile search --profile proxy up --build`
 
 Otherwise, you have to ensure to have [MongoDB running](#mongodb-setup) and follow [Project setup instructions](#project-setup-all-platforms)
 

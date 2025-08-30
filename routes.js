@@ -1,4 +1,4 @@
-
+const { upload } = require('./utils/multer');
 
 // routes.js
 const express = require('express');
@@ -14,7 +14,7 @@ router.get('/', homeController.getHome);
 router.get('/authors', authorsController.getAuthors);
 
 // Web CRUD Authors
-router.get('/authors/new', authorsController.renderNewAuthorForm);
+router.get('/authors/new', authorsController.renderNewAuthorForm); //upload.single('photo')
 router.post('/authors', authorsController.createAuthorWeb);
 router.get('/authors/:id/edit', authorsController.renderEditAuthorForm);
 router.post('/authors/:id', authorsController.updateAuthorWeb);
@@ -24,9 +24,9 @@ router.post('/authors/:id/delete', authorsController.deleteAuthorWeb);
 router.get('/books', booksController.getBooks);
 
 // Web CRUD Books
-router.get('/books/new', booksController.renderNewBookForm);
+router.get('/books/new', booksController.renderNewBookForm); //upload.single('cover')
 router.post('/books', booksController.createBookWeb);
-router.get('/books/:id/edit', booksController.renderEditBookForm);
+router.get('/books/:id/edit', booksController.renderEditBookForm); //upload.single('cover')
 router.post('/books/:id', booksController.updateBookWeb);
 router.post('/books/:id/delete', booksController.deleteBookWeb);
 
