@@ -22,7 +22,7 @@ Developed by Group 11:
 ### Docker Profiles
 
 App + DB:
-- `docker-compose up --build`
+- `docker-compose --profile base up --build`
 
 App + DB + Cache
 - `docker-compose --profile cache up --build`
