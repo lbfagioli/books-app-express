@@ -26,6 +26,14 @@
                 <% }) %>
             </select><br><br>
 
+            <label for="cover">Cover image:</label><br>
+                <% if (book.coverImage) { %>
+                    <div style="margin-bottom:10px;">
+                        <img src="/uploads/<%= book.coverImage %>" alt="cover" style="width:120px; height:auto; object-fit:cover; border-radius:4px; border:1px solid #ddd;">
+                    </div>
+                <% } %>
+            <input type="file" id="cover" name="cover" accept="image/*"><br><br>
+
             <button type="submit">Save</button>
         </form>
         <a href="/books">Back to Books</a>

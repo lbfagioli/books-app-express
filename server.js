@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 if (serveStatic) {
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
 else {
     app.use('/', routes);

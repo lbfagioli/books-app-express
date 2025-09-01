@@ -95,7 +95,8 @@ const getTopRatedBooks = async (req, res) => {
                 author: book.author ? book.author.name : "Unknown",
                 avgScore,
                 highestReview: highestReview ? highestReview.reviewText : "N/A",
-                lowestReview: lowestReview ? lowestReview.reviewText : "N/A"
+                lowestReview: lowestReview ? lowestReview.reviewText : "N/A",
+                coverImage: book.coverImage
             };
         });
 
@@ -173,7 +174,8 @@ const getTopSellingBooks = async (req, res) => {
                 author: book.author ? book.author.name : "Unknown",
                 totalSales,
                 authorTotal,
-                top5OfYear
+                top5OfYear,
+                coverImage: book.coverImage
             };
         });
 
@@ -389,8 +391,20 @@ async function renderEditBookForm(req, res) {
 // Update book from web form
 async function updateBookWeb(req, res) {
     try {
+        const book = await Book.findById(req.params.id);
+        if (!book) return res.status(404).send('Book not found');
+
         const updateData = req.body;
+
+        // If a new image was uploaded, update it and remove old one
         if (req.file) {
+            // Delete old image if it exists
+            if (book.coverImage) {
+                const oldImagePath = path.join(__dirname, '..', 'uploads', book.coverImage);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
             updateData.coverImage = req.file.filename;
         }
 

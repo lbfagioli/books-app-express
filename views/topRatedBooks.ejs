@@ -25,6 +25,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Cover</th>
                     <th>Title</th>
                     <th>Author</th>
                     <th>Average Score</th>
@@ -35,6 +36,13 @@
             <tbody>
                 <% books.forEach(book => { %>
                     <tr>
+                        <td style="text-align:center;">
+                            <% if (book.coverImage) { %>
+                                <img src="/uploads/<%= book.coverImage %>" alt="cover" style="width:60px; height:auto; object-fit:cover; border-radius:4px;">
+                            <% } else { %>
+                                <div style="width:60px; height:90px; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#666; border-radius:4px;">No image</div>
+                            <% } %>
+                        </td>
                         <td><%= book.title %></td>
                         <td><%= book.author %></td>
                         <td><%= book.avgScore.toFixed(2) %></td>
