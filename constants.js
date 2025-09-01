@@ -4,6 +4,5 @@ const PORT = 3000;
 module.exports = {
     mongoURI,
     PORT,
-    uploadPath: process.env.UPLOAD_PATH || 'uploads', // default to local uploads folder
     serveStatic: process.env.SERVE_STATIC === 'true'
 }

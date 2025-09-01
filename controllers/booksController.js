@@ -12,7 +12,8 @@ const getBooks = async (req, res) => {
             summary: book.summary,
             publicationDate: book.publicationDate,
             reviewCount: book.reviews.length,
-            totalSales: book.sales.reduce((sum, s) => sum + s.sales, 0)
+            totalSales: book.sales.reduce((sum, s) => sum + s.sales, 0),
+            coverImage: book.coverImage
         }));
 
         // To get raw data
@@ -360,7 +361,12 @@ async function renderNewBookForm(req, res) {
 // Create book from web form
 async function createBookWeb(req, res) {
     try {
-        const book = new Book(req.body);
+        const bookData = req.body;
+        if (req.file) {
+            bookData.coverImage = req.file.filename;
+        }
+
+        const book = new Book(bookData);
         await book.save();
         res.redirect('/books');
     } catch (err) {
@@ -383,7 +389,12 @@ async function renderEditBookForm(req, res) {
 // Update book from web form
 async function updateBookWeb(req, res) {
     try {
-        await Book.findByIdAndUpdate(req.params.id, req.body);
+        const updateData = req.body;
+        if (req.file) {
+            updateData.coverImage = req.file.filename;
+        }
+
+        await Book.findByIdAndUpdate(req.params.id, updateData);
         res.redirect('/books');
     } catch (err) {
         res.status(500).send(err.message);

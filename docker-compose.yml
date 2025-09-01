@@ -9,7 +9,7 @@ services:
       MONGO_URL: mongodb://db:27017/books
       UPLOAD_PATH: /app/uploads
     volumes:
-      - ./uploads:/app/uploads
+      - ./uploads:/books-app/uploads
     profiles:
       - base
 

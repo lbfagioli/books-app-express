@@ -1,9 +1,9 @@
 const multer = require('multer');
-const { uploadPath } = require('../constants');
 const fs = require('fs');
 const path = require('path');
 
 // Handles logic for image-based uploads //
+const uploadPath = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
 }

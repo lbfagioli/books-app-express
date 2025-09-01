@@ -17,7 +17,8 @@ const bookSchema = new mongoose.Schema({
     publicationDate: { type: Date, default: Date.now },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author' }, // relation with Author
     reviews: [reviewSchema],
-    sales: [salesSchema]
+    sales: [salesSchema],
+    coverImage: { type: String } // stores the filename
 });
 
 module.exports = mongoose.model('Book', bookSchema);
