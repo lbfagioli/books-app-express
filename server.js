@@ -3,6 +3,7 @@ const app = express();
 const path = require('path');
 const routes = require('./routes');
 const mongoose = require('mongoose');
+const { uploadPath } = require('./utils/multer');
 const { mongoURI, PORT, serveStatic } = require('./constants');
 
 
@@ -23,11 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 if (serveStatic) {
-    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+    app.use('/uploads', express.static(uploadPath));
 }
 else {
-    app.use('/', routes);
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
+app.use('/', routes);
+
 
 app.listen(PORT, () => {
     console.log('Server started, receiving requests...');

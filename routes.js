@@ -1,4 +1,4 @@
-const upload = require('./utils/multer');
+const { upload } = require('./utils/multer');
 
 // routes.js
 const express = require('express');
