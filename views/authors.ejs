@@ -37,6 +37,7 @@
     <table id="authorsTable">
             <thead>
                 <tr>
+                    <th>Image</th>
                     <th onclick="sortTable(0)">Name</th>
                     <th onclick="sortTable(1)">Books</th>
                     <th onclick="sortTable(2)">Average Score</th>
@@ -48,6 +49,15 @@
             <tbody>
                 <% authors.forEach(a => { %>
                     <tr>
+                        <td>
+                            <% if (a.portrait) { %>
+                                <img src="/uploads/<%= a.portrait %>" 
+                                        alt="<%= a.name %>" 
+                                        style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
+                            <% } else { %>
+                                <span style="color: #888;">No Image</span>
+                            <% } %>
+                        </td>
                         <td><%= a.name %></td>
                         <td><%= a.bookCount %></td>
                         <td><%= a.avgScore %></td>

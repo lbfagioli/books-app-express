@@ -31,7 +31,8 @@ const getAuthors = async (req, res) => {
                 bookCount: books.length,
                 avgScore: parseFloat(avgScore.toFixed(2)),
                 totalSales,
-                totalReviews
+                totalReviews,
+                portrait: author.portrait
             });
         }
 
@@ -137,7 +138,12 @@ async function renderNewAuthorForm(req, res) {
 // Create author from web form
 async function createAuthorWeb(req, res) {
     try {
-        const author = new Author(req.body);
+        const authorData = req.body;
+        if (req.file) {
+            authorData.portrait = req.file.filename;
+        }
+        
+        const author = new Author(authorData);
         await author.save();
         res.redirect('/authors');
     } catch (err) {
@@ -159,7 +165,23 @@ async function renderEditAuthorForm(req, res) {
 // Update author from web form
 async function updateAuthorWeb(req, res) {
     try {
-        await Author.findByIdAndUpdate(req.params.id, req.body);
+        const author = await Author.findById(req.params.id)
+        if (!author) return res.status(404).send('Author not found');
+
+        const updateData = req.body;
+
+        // If a new image was uploaded, update it and remove old one
+        if (req.file) {
+            // Delete old image if it exists
+            if (author.portrait) {
+                const oldImagePath = path.join(__dirname, '..', 'uploads', author.portrait);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+            updateData.portrait = req.file.filename;
+        }
+        await Author.findByIdAndUpdate(req.params.id, updateData);
         res.redirect('/authors');
     } catch (err) {
         res.status(500).send(err.message);

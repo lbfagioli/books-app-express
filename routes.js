@@ -15,9 +15,9 @@ router.get('/authors', authorsController.getAuthors);
 
 // Web CRUD Authors
 router.get('/authors/new', authorsController.renderNewAuthorForm); //upload.single('photo')
-router.post('/authors', authorsController.createAuthorWeb);
+router.post('/authors', upload.single('portrait'), authorsController.createAuthorWeb);
 router.get('/authors/:id/edit', authorsController.renderEditAuthorForm);
-router.post('/authors/:id', authorsController.updateAuthorWeb);
+router.post('/authors/:id', upload.single('portrait'), authorsController.updateAuthorWeb);
 router.post('/authors/:id/delete', authorsController.deleteAuthorWeb);
 
 // Books

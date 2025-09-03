@@ -8,7 +8,7 @@
     <%- include('common/navbar') %>
     <div style="padding: 0 5%; max-width:600px; margin:auto;">
         <h1><%= title %></h1>
-        <form action="<%= action %>" method="POST">
+        <form action="<%= action %>" method="POST" enctype="multipart/form-data">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" value="<%= author.name || '' %>" required><br><br>
 
@@ -20,6 +20,14 @@
 
             <label for="description">Description:</label>
             <textarea id="description" name="description"><%= author.description || '' %></textarea><br><br>
+
+            <label for="portrait">Portrait:</label><br>
+                <% if (author.portrait) { %>
+                    <div style="margin-bottom:10px;">
+                        <img src="/uploads/<%= author.portrait %>" alt="portrait" style="width:120px; height:auto; object-fit:cover; border-radius:4px; border:1px solid #ddd;">
+                    </div>
+                <% } %>
+            <input type="file" id="portrait" name="portrait" accept="image/*"><br><br>
 
             <button type="submit">Save</button>
         </form>
