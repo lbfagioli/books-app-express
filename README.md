@@ -22,16 +22,16 @@ Developed by Group 11:
 ### Docker Profiles
 
 App + DB:
-- `docker-compose --profile base up --build`
+- `docker compose --profile base up --build`
 
 App + DB + Cache
-- `docker-compose --profile base --profile cache up --build`
+- `docker compose --profile base --profile cache up --build`
 
 App + DB + Search Engine:
-- `docker-compose --profile base --profile search up --build`
+- `docker compose --profile base --profile search up --build`
 
 App + DB + Reverse Proxy
-- `docker-compose --profile base --profile proxy up --build`
+- `docker compose --profile base --profile proxy up --build`
 
 All Together
 - `docker compose --profile base --profile cache --profile search --profile proxy up --build`

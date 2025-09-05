@@ -1,5 +1,6 @@
 const Author = require('../models/Author');
 const Book = require('../models/Book');
+const { USE_CACHE } = require('../utils/cache');
 const { getCache, setCache, delCache } = require('../utils/cache');
 
 const getAuthors = async (req, res) => {
@@ -8,7 +9,7 @@ const getAuthors = async (req, res) => {
         const authors = await Author.find({});
         const stats = [];
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             const cached = await getCache('authors_stats');
             if (cached) {
                 console.log('[CACHE GET] authors_stats');
@@ -75,7 +76,7 @@ const getAuthors = async (req, res) => {
         if (maxReviews) filtered = filtered.filter(a => a.totalReviews <= parseInt(maxReviews));
 
         // Redis cache for 1 hour
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await setCache('authors_stats', 3600, stats);
             console.log('[CACHE SET] authors_stats TTL=3600s');
         }
@@ -113,7 +114,7 @@ const createAuthor = async (req, res) => {
     try {
         const author = new Author(req.body);
         const saved = await author.save();
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('authors_stats');
             console.log('[CACHE DEL] authors_stats');
         }
@@ -127,7 +128,7 @@ const createAuthor = async (req, res) => {
 const updateAuthor = async (req, res) => {
     try {
         const updated = await Author.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('authors_stats');
             console.log('[CACHE DEL] authors_stats');
         }
@@ -142,7 +143,7 @@ const updateAuthor = async (req, res) => {
 const deleteAuthor = async (req, res) => {
     try {
         await Author.findByIdAndDelete(req.params.id);
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('authors_stats');
             console.log('[CACHE DEL] authors_stats');
         }
@@ -183,6 +184,12 @@ async function createAuthorWeb(req, res) {
         
         const author = new Author(authorData);
         await author.save();
+
+        if (USE_CACHE) {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.redirect('/authors');
     } catch (err) {
         res.status(500).send(err.message);
@@ -220,6 +227,12 @@ async function updateAuthorWeb(req, res) {
             updateData.portrait = req.file.filename;
         }
         await Author.findByIdAndUpdate(req.params.id, updateData);
+
+        if (USE_CACHE) {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.redirect('/authors');
     } catch (err) {
         res.status(500).send(err.message);
@@ -230,6 +243,12 @@ async function updateAuthorWeb(req, res) {
 async function deleteAuthorWeb(req, res) {
     try {
         await Author.findByIdAndDelete(req.params.id);
+
+        if (USE_CACHE) {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.redirect('/authors');
     } catch (err) {
         res.status(500).send(err.message);

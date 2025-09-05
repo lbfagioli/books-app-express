@@ -8,7 +8,6 @@ services:
     environment:
       MONGO_URL: mongodb://db:27018/books
       UPLOAD_PATH: /app/uploads
-      USE_CACHE: "true"
     volumes:
       - ./uploads:/books-app/uploads
     profiles:

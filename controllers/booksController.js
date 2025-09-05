@@ -1,11 +1,11 @@
 const Book = require('../models/Book');
-const { get } = require('mongoose');
+const { USE_CACHE } = require('../utils/cache');
 const { getCache, setCache, delCache } = require('../utils/cache');
 
 const getBooks = async (req, res) => {
     try {
         // Try cache first
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             const cached = await getCache('books_all');
             if (cached) {
                 const cachedBooks = JSON.parse(cached);
@@ -33,7 +33,7 @@ const getBooks = async (req, res) => {
         // If no cache, fetch from DB
         const books = await Book.find({});
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await setCache('books_all', 3600, books); // 1h TTL
             console.log('[CACHE SET] books_all TTL=300s');
         }
@@ -65,10 +65,10 @@ const getBook = async (req, res) => {
     try {
         const book = await Book.findById(req.params.id);
 
-        if (process.env.USE_CACHE === 'true') {
-            const cached = await getCache(`book:${id}`);
+        if (USE_CACHE) {
+            const cached = await getCache(`book:${req.params.id}`);
             if (cached) {
-                console.log(`[CACHE GET] ook:${id}`);
+                console.log(`[CACHE GET] book:${req.params.id}`);
                 return res.status(200).json(JSON.parse(cached));
             }
         }
@@ -85,10 +85,13 @@ const createBook = async (req, res) => {
         const newBook = new Book(req.body);
         const savedBook = await newBook.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
             await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
             await delCache(`book:${savedBook._id}`);
+            console.log(`[CACHE DEL] book:${savedBook._id}`);
         }
 
         res.status(201).json(savedBook);
@@ -99,14 +102,31 @@ const createBook = async (req, res) => {
 
 const updateBook = async (req, res) => {
     try {
-        const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const book = await Book.findById(req.params.id);
         if (!book) return res.status(404).json({ error: "Not found" });
 
-        if (process.env.USE_CACHE === 'true') {
+        Object.assign(book, req.body);
+
+        // Replace data
+        if (req.file) {
+            if (book.coverImage) {
+                const oldImagePath = path.join(__dirname, '..', 'uploads', book.coverImage);
+                if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+            }
+            book.coverImage = req.file.filename;
+        }
+
+        await book.save();
+
+        if (USE_CACHE) {
             await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
             await delCache(`book:${req.params.id}`);
+            console.log(`[CACHE DEL] book:${req.params.id}`);
             await delCache(`book_reviews:${req.params.id}`);
+            console.log(`[CACHE DEL] book_reviews:${req.params.id}`);
             await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
         }
 
         res.status(200).json(book);
@@ -120,11 +140,15 @@ const deleteBook = async (req, res) => {
         const book = await Book.findByIdAndDelete(req.params.id);
         if (!book) return res.status(404).json({ error: "Not found" });
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
             await delCache(`book:${req.params.id}`);
+            console.log(`[CACHE DEL] book:${req.params.id}`);
             await delCache(`book_reviews:${req.params.id}`);
+            console.log(`[CACHE DEL] book_reviews:${req.params.id}`);
             await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
         }
 
         res.status(204).end();
@@ -139,7 +163,7 @@ const getTopRatedBooks = async (req, res) => {
         const { author, minScore, maxScore } = req.query;
         const key = `top_rated:${author||''}:${minScore||''}:${maxScore||''}`;
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             const cached = await getCache(key);
             if (cached) {
                 const top10 = JSON.parse(cached);
@@ -198,7 +222,7 @@ const getTopRatedBooks = async (req, res) => {
             .sort((a, b) => b.avgScore - a.avgScore)
             .slice(0, 10);
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await setCache(key, 3600, top10);
             console.log(`[CACHE SET] ${key} TTL=3600s`);
         }
@@ -222,7 +246,7 @@ const getTopSellingBooks = async (req, res) => {
         const { author, top5 } = req.query; // filters
         const key = `top_selling:${author||''}:${top5||''}`;
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             const cached = await getCache(key);
             if (cached) {
                 const top50 = JSON.parse(cached);
@@ -290,7 +314,7 @@ const getTopSellingBooks = async (req, res) => {
             .sort((a, b) => b.totalSales - a.totalSales)
             .slice(0, 50);
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await setCache(key, 3600, top50);
             console.log(`[CACHE SET] ${key} TTL=3600s`);
         }
@@ -311,7 +335,7 @@ const getSearch = async (req, res) => {
         const { q, page = 1, limit = 10 } = req.query;
         const key = `search:${q||''}:p${page}:l${limit}`;
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             const cached = await getCache(key);
             if (cached) {
                 const { books, totalPages } = JSON.parse(cached);
@@ -340,7 +364,7 @@ const getSearch = async (req, res) => {
 
         const totalPages = Math.ceil(totalBooks / limit);
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await setCache(key, 300, { books, totalPages });
             console.log(`[CACHE SET] ${key} TTL=300s`);
         }
@@ -380,7 +404,7 @@ async function addReviewWeb(req, res) {
         book.reviews.push(req.body);
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -407,7 +431,7 @@ async function updateReviewWeb(req, res) {
         review.upvotes = req.body.upvotes;
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -437,7 +461,7 @@ async function deleteReviewWeb(req, res) {
         }
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -461,7 +485,7 @@ async function addSaleWeb(req, res) {
         book.sales.push(req.body);
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -487,7 +511,7 @@ async function updateSaleWeb(req, res) {
         sale.sales = req.body.sales;
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -517,7 +541,7 @@ async function deleteSaleWeb(req, res) {
         }
         await book.save();
 
-        if (process.env.USE_CACHE === 'true') {
+        if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
             await delCache(`book:${book._id}`);
@@ -554,6 +578,16 @@ async function createBookWeb(req, res) {
 
         const book = new Book(bookData);
         await book.save();
+
+        if (USE_CACHE) {
+            await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+            await delCache(`book:${book._id}`);
+            console.log(`[CACHE DEL] book:${book._id}`);
+        }
+
         res.redirect('/books');
     } catch (err) {
         res.status(500).send(err.message);
@@ -593,6 +627,18 @@ async function updateBookWeb(req, res) {
         }
 
         await Book.findByIdAndUpdate(req.params.id, updateData);
+
+        if (USE_CACHE) {
+            await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
+            await delCache(`book:${req.params.id}`);
+            console.log(`[CACHE DEL] book:${req.params.id}`);
+            await delCache(`book_reviews:${req.params.id}`);
+            console.log(`[CACHE DEL] book_reviews:${req.params.id}`);
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.redirect('/books');
     } catch (err) {
         res.status(500).send(err.message);
@@ -603,6 +649,18 @@ async function updateBookWeb(req, res) {
 async function deleteBookWeb(req, res) {
     try {
         await Book.findByIdAndDelete(req.params.id);
+
+        if (USE_CACHE) {
+            await delCache('books_all');
+            console.log('[CACHE DEL] books_all');
+            await delCache(`book:${req.params.id}`);
+            console.log(`[CACHE DEL] book:${req.params.id}`);
+            await delCache(`book_reviews:${req.params.id}`);
+            console.log(`[CACHE DEL] book_reviews:${req.params.id}`);
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.redirect('/books');
     } catch (err) {
         res.status(500).send(err.message);

@@ -1,7 +1,8 @@
 const redis = require('redis');
+let USE_CACHE = true; // change to false if you want to disable it
 let client = null;
 
-(async () => {
+async function connectRedis() {
     try {
         client = redis.createClient({ url: process.env.REDIS_URL || 'redis://redis:6379' });
         await client.connect();
@@ -9,10 +10,11 @@ let client = null;
         await client.flushAll();
         console.log("✅ Redis cache cleared");
     } catch (err) {
-        console.log("❌ Redis not found, running without cache");
-        client = null;
-    }
-})();
+        console.log("⚠️ Redis not found, cache disabled");
+        USE_CACHE = false;
+    }    
+}
+
 async function getCache(key) {
     if (!client) return null;
     return await client.get(key);
@@ -28,4 +30,4 @@ async function delCache(key) {
     await client.del(key);
 }
 
-module.exports = { getCache, setCache, delCache };
+module.exports = { USE_CACHE, connectRedis, getCache, setCache, delCache };

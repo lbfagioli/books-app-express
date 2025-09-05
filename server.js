@@ -4,12 +4,14 @@ const path = require('path');
 const routes = require('./routes');
 const mongoose = require('mongoose');
 const { uploadPath } = require('./utils/multer');
+const { connectRedis } = require('./utils/cache');
 const { mongoURI, PORT, serveStatic } = require('./constants');
 
 mongoose.connect(mongoURI)
     .then(() => console.log('Mongo connected'))
     .catch((err) => console.error('Failed to connect mongo, ', err))
 
+connectRedis().catch(console.error);
 
 // Views settings
 app.set('view engine', 'ejs');
