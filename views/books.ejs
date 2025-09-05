@@ -33,7 +33,7 @@
                         </td>
                         <td><%= book.title %></td>
                         <td><%= book.summary %></td>
-                        <td><%= book.publicationDate.toDateString() %></td>
+                        <td><%= new Date(book.publicationDate).toDateString() %></td>
                         <td><%= book.reviewCount %></td>
                         <td><%= book.totalSales %></td>
                         <td>

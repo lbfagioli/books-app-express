@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 const { uploadPath } = require('./utils/multer');
 const { mongoURI, PORT, serveStatic } = require('./constants');
 
-
 mongoose.connect(mongoURI)
     .then(() => console.log('Mongo connected'))
     .catch((err) => console.error('Failed to connect mongo, ', err))

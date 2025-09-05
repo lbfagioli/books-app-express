@@ -6,8 +6,9 @@ services:
     depends_on:
       - db
     environment:
-      MONGO_URL: mongodb://db:27017/books
+      MONGO_URL: mongodb://db:27018/books
       UPLOAD_PATH: /app/uploads
+      USE_CACHE: "true"
     volumes:
       - ./uploads:/books-app/uploads
     profiles:
@@ -16,7 +17,7 @@ services:
   db:
     image: mongo:6
     ports:
-      - "27017:27017"
+      - "27018:27018"
     volumes:
       - mongo_data:/data/db
     profiles:

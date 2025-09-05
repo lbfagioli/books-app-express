@@ -1,12 +1,29 @@
 const Author = require('../models/Author');
 const Book = require('../models/Book');
+const { getCache, setCache, delCache } = require('../utils/cache');
 
 const getAuthors = async (req, res) => {
     try {
         const { name, minBooks, maxBooks, minScore, maxScore, minSales, maxSales, minReviews, maxReviews } = req.query;
-
         const authors = await Author.find({});
         const stats = [];
+
+        if (process.env.USE_CACHE === 'true') {
+            const cached = await getCache('authors_stats');
+            if (cached) {
+                console.log('[CACHE GET] authors_stats');
+                const stats = JSON.parse(cached);
+                const authorsWithId = stats.map(a => {
+                const found = authors.find(orig => orig.name === a.name);
+                return { ...a, _id: found ? found._id : null };
+                });
+
+                return res.render('authors', {
+                    authors: authorsWithId,
+                    filters: { name, minBooks, maxBooks, minScore, maxScore, minSales, maxSales, minReviews, maxReviews }
+                });
+            }
+        }
 
         for (let author of authors) {
             const books = await Book.find({ author: author._id });
@@ -57,6 +74,12 @@ const getAuthors = async (req, res) => {
         if (minReviews) filtered = filtered.filter(a => a.totalReviews >= parseInt(minReviews));
         if (maxReviews) filtered = filtered.filter(a => a.totalReviews <= parseInt(maxReviews));
 
+        // Redis cache for 1 hour
+        if (process.env.USE_CACHE === 'true') {
+            await setCache('authors_stats', 3600, stats);
+            console.log('[CACHE SET] authors_stats TTL=3600s');
+        }
+
         // API: return JSON
         if (req.originalUrl.startsWith('/api')) {
             return res.json(filtered);
@@ -90,6 +113,11 @@ const createAuthor = async (req, res) => {
     try {
         const author = new Author(req.body);
         const saved = await author.save();
+        if (process.env.USE_CACHE === 'true') {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.status(201).json(saved);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -99,6 +127,11 @@ const createAuthor = async (req, res) => {
 const updateAuthor = async (req, res) => {
     try {
         const updated = await Author.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (process.env.USE_CACHE === 'true') {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         if (!updated) return res.status(404).json({ error: "Not found" });
         res.json(updated);
     } catch (err) {
@@ -109,6 +142,11 @@ const updateAuthor = async (req, res) => {
 const deleteAuthor = async (req, res) => {
     try {
         await Author.findByIdAndDelete(req.params.id);
+        if (process.env.USE_CACHE === 'true') {
+            await delCache('authors_stats');
+            console.log('[CACHE DEL] authors_stats');
+        }
+
         res.status(204).end();
     } catch (err) {
         res.status(500).json({ error: err.message });
