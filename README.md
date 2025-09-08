@@ -36,6 +36,20 @@ App + DB + Reverse Proxy
 All Together
 - `docker compose --profile base --profile cache --profile search --profile proxy up --build`
 
+**Note about OpenSearch:**
+OpenSearch may take several minutes to become available when started with Docker. If the app cannot connect to the search engine, it is recommended to start the search service first and then start the app with the database. Example:
+
+1. Start only the search service:
+  ```bash
+  docker compose --profile search up --build
+  ```
+2. Once OpenSearch is ready, start the app and database:
+  ```bash
+  docker compose --profile base up --build
+  ```
+This way, the app will be able to connect to OpenSearch correctly.
+
+
 Otherwise, you have to ensure to have [MongoDB running](#mongodb-setup) and follow [Project setup instructions](#project-setup-all-platforms)
 
 ### MongoDB setup
