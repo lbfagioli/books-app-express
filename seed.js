@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Book = require('./models/Book');
 const Author = require('./models/Author');
 const { mongoURI } = require('./constants');
+const { indexBook, indexReview } = require('./utils/search');
 
 mongoose.connect(mongoURI);
 
@@ -76,6 +77,12 @@ async function seedDatabase() {
         });
 
         await book.save();
+        // Index book in OpenSearch
+        try { await indexBook(book); } catch (e) { console.log('[OpenSearch] Index book failed', e); }
+        // Index reviews in OpenSearch
+        for (const review of book.reviews) {
+            try { await indexReview(book._id, review); } catch (e) { console.log('[OpenSearch] Index review failed', e); }
+        }
     }
 
     console.log("Database seeded");

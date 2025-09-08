@@ -8,6 +8,7 @@ services:
     environment:
       MONGO_URL: mongodb://db:27018/books
       UPLOAD_PATH: /app/uploads
+      SEARCH_URL: http://opensearch:9200
     volumes:
       - ./uploads:/books-app/uploads
     profiles:
@@ -34,6 +35,7 @@ services:
     environment:
       discovery.type: single-node
       plugins.security.disabled: "true"
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "S3cureP@ssw0rd!2025#A1b2C3d4"
     ports:
       - "9200:9200"
     profiles:

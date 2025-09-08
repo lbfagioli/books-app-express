@@ -1,5 +1,5 @@
 const redis = require('redis');
-let USE_CACHE = true; // change to false if you want to disable it
+let USE_CACHE = true;
 let client = null;
 
 async function connectRedis() {
@@ -16,18 +16,34 @@ async function connectRedis() {
 }
 
 async function getCache(key) {
-    if (!client) return null;
-    return await client.get(key);
+    if (!client || !USE_CACHE) return null;
+    try {
+        return await client.get(key);
+    } catch (err) {
+        console.log("[Redis] getCache error, disabling cache", err);
+        USE_CACHE = false;
+        return null;
+    }
 }
 
 async function setCache(key, ttl = 3600, value) {
-    if (!client) return;
-    await client.set(key, JSON.stringify(value), { EX: ttl });
+    if (!client || !USE_CACHE) return;
+    try {
+        await client.set(key, JSON.stringify(value), { EX: ttl });
+    } catch (err) {
+        console.log("[Redis] setCache error, disabling cache", err);
+        USE_CACHE = false;
+    }
 }
 
 async function delCache(key) {
-    if (!client) return;
-    await client.del(key);
+    if (!client || !USE_CACHE) return;
+    try {
+        await client.del(key);
+    } catch (err) {
+        console.log("[Redis] delCache error, disabling cache", err);
+        USE_CACHE = false;
+    }
 }
 
 module.exports = { USE_CACHE, connectRedis, getCache, setCache, delCache };

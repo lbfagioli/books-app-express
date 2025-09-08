@@ -1,16 +1,18 @@
 const Book = require('../models/Book');
 const { USE_CACHE } = require('../utils/cache');
 const { getCache, setCache, delCache } = require('../utils/cache');
+const { indexBook } = require('../utils/search');
 
 const getBooks = async (req, res) => {
     try {
+        console.log('[getBooks] INICIO');
         // Try cache first
         if (USE_CACHE) {
+            console.log('[getBooks] Intentando cache');
             const cached = await getCache('books_all');
             if (cached) {
+                console.log('[getBooks] Cache encontrada');
                 const cachedBooks = JSON.parse(cached);
-                console.log('[CACHE GET] books_all');
-
                 // Frontend view
                 const booksForView = cachedBooks.map(book => ({
                     _id: book._id,
@@ -21,23 +23,23 @@ const getBooks = async (req, res) => {
                     totalSales: book.sales.reduce((sum, s) => sum + s.sales, 0),
                     coverImage: book.coverImage
                 }));
-
                 if (req.originalUrl.startsWith('/api')) {
+                    console.log('[getBooks] Respondiendo API con cache');
                     return res.status(200).json(cachedBooks);
                 } else {
+                    console.log('[getBooks] Renderizando vista con cache');
                     return res.render('books', { books: booksForView });
                 }
             }
         }
-
+        console.log('[getBooks] Consultando MongoDB');
         // If no cache, fetch from DB
         const books = await Book.find({});
-
+        console.log(`[getBooks] MongoDB retornó ${books.length} libros`);
         if (USE_CACHE) {
             await setCache('books_all', 3600, books); // 1h TTL
-            console.log('[CACHE SET] books_all TTL=300s');
+            console.log('[getBooks] Cache actualizada');
         }
-
         // Frontend
         const booksForView = books.map(book => ({
             _id: book._id,
@@ -48,15 +50,17 @@ const getBooks = async (req, res) => {
             totalSales: book.sales.reduce((sum, s) => sum + s.sales, 0),
             coverImage: book.coverImage
         }));
-
         // To get raw data
         if (req.originalUrl.startsWith('/api')) {
+            console.log('[getBooks] Respondiendo API con datos de MongoDB');
             res.status(200).json(books);
         } else {
-            // To frontend view
+            console.log('[getBooks] Renderizando vista con datos de MongoDB');
             res.render('books', { books: booksForView });
         }
+        console.log('[getBooks] FIN');
     } catch (err) {
+        console.log('[getBooks] ERROR', err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -84,6 +88,9 @@ const createBook = async (req, res) => {
     try {
         const newBook = new Book(req.body);
         const savedBook = await newBook.save();
+
+        // Index in OpenSearch
+        try { await indexBook(savedBook); } catch (e) { console.log('[OpenSearch] Index book failed', e); }
 
         if (USE_CACHE) {
             await delCache('books_all');
@@ -118,6 +125,9 @@ const updateBook = async (req, res) => {
 
         await book.save();
 
+        // Update in OpenSearch
+        try { await indexBook(book); } catch (e) { console.log('[OpenSearch] Update book failed', e); }
+
         if (USE_CACHE) {
             await delCache('books_all');
             console.log('[CACHE DEL] books_all');
@@ -139,6 +149,13 @@ const deleteBook = async (req, res) => {
     try {
         const book = await Book.findByIdAndDelete(req.params.id);
         if (!book) return res.status(404).json({ error: "Not found" });
+
+        // Remove from OpenSearch
+        try {
+            const { Client } = require('@opensearch-project/opensearch');
+            const client = new Client({ node: process.env.SEARCH_URL || 'http://opensearch:9200' });
+            await client.delete({ index: 'books', id: req.params.id });
+        } catch (e) { console.log('[OpenSearch] Delete book failed', e); }
 
         if (USE_CACHE) {
             await delCache('books_all');
@@ -330,6 +347,7 @@ const getTopSellingBooks = async (req, res) => {
 };
 
 
+const { searchBooks } = require('../utils/search');
 const getSearch = async (req, res) => {
     try {
         const { q, page = 1, limit = 10 } = req.query;
@@ -344,25 +362,44 @@ const getSearch = async (req, res) => {
             }
         }
 
-        // Search title or in summary
-        const regex = new RegExp(q, 'i'); 
-        const books = await Book.find({
-            $or: [
-                { title: regex },
-                { summary: regex }
-            ]
-        })
-        .skip((page - 1) * limit)
-        .limit(parseInt(limit));
+        // Try OpenSearch first
+        let books = [];
+        let totalPages = 1;
+        let usedSearchEngine = false;
+        try {
+            books = await searchBooks(q);
+            usedSearchEngine = books && books.length > 0;
+            totalPages = Math.ceil((books.length || 1) / limit);
+            books = books.slice((page - 1) * limit, page * limit);
+            if (usedSearchEngine) {
+                console.log('[SEARCH] Resultados obtenidos desde OpenSearch');
+            }
+        } catch (e) {
+            usedSearchEngine = false;
+            console.log('[SEARCH] Error en OpenSearch, usando MongoDB:', e.message);
+        }
 
-        const totalBooks = await Book.countDocuments({
-            $or: [
-                { title: regex },
-                { summary: regex }
-            ]
-        });
+        if (!usedSearchEngine) {
+            console.log('[SEARCH] Resultados obtenidos desde MongoDB');
+            // Fallback to MongoDB
+            const regex = new RegExp(q, 'i'); 
+            books = await Book.find({
+                $or: [
+                    { title: regex },
+                    { summary: regex }
+                ]
+            })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
 
-        const totalPages = Math.ceil(totalBooks / limit);
+            const totalBooks = await Book.countDocuments({
+                $or: [
+                    { title: regex },
+                    { summary: regex }
+                ]
+            });
+            totalPages = Math.ceil(totalBooks / limit);
+        }
 
         if (USE_CACHE) {
             await setCache(key, 300, { books, totalPages });
@@ -398,11 +435,15 @@ module.exports = {
 };
 
 // --- Reviews CRUD ---
+const { indexReview } = require('../utils/search');
 async function addReviewWeb(req, res) {
     try {
         const book = await Book.findById(req.params.id);
         book.reviews.push(req.body);
         await book.save();
+
+        // Index review in OpenSearch
+        try { await indexReview(book._id, book.reviews[book.reviews.length-1]); } catch (e) { console.log('[OpenSearch] Index review failed', e); }
 
         if (USE_CACHE) {
             await delCache('books_all');
@@ -430,6 +471,9 @@ async function updateReviewWeb(req, res) {
         review.score = req.body.score;
         review.upvotes = req.body.upvotes;
         await book.save();
+
+        // Update review in OpenSearch
+        try { await indexReview(book._id, review); } catch (e) { console.log('[OpenSearch] Update review failed', e); }
 
         if (USE_CACHE) {
             await delCache('books_all');
@@ -460,6 +504,13 @@ async function deleteReviewWeb(req, res) {
             book.reviews = book.reviews.filter(r => r._id?.toString() !== req.params.reviewId);
         }
         await book.save();
+
+        // Remove review from OpenSearch
+        try {
+            const { Client } = require('@opensearch-project/opensearch');
+            const client = new Client({ node: process.env.SEARCH_URL || 'http://opensearch:9200' });
+            await client.delete({ index: 'reviews', id: req.params.reviewId });
+        } catch (e) { console.log('[OpenSearch] Delete review failed', e); }
 
         if (USE_CACHE) {
             await delCache('books_all');

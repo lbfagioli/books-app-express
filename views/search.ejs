@@ -25,7 +25,7 @@
                         <tr>
                             <td><%= book.title %></td>
                             <td><%= book.summary %></td>
-                            <td><%= book.publicationDate.toDateString() %></td>
+                            <td><%= book.publicationDate ? new Date(book.publicationDate).toDateString() : 'N/A' %></td>
                         </tr>
                     <% }) %>
                 </tbody>
