@@ -12,7 +12,11 @@ services:
     volumes:
       - ./uploads:/books-app/uploads
     profiles:
-      - base
+      - base    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.booksapp.rule=Host(`localhost`)"
+      - "traefik.http.services.booksapp.loadbalancer.server.port=3000"
 
   db:
     image: mongo:6
